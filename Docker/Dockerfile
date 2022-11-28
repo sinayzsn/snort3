@@ -35,22 +35,3 @@ RUN wget https://github.com/snort3/snort3/archive/refs/tags/3.1.28.0.tar.gz && \
     cd build && \
     make && \
     make install
-
-# Setting up ssh on host
-RUN mkdir /var/run/sshd
-RUN echo 'root:screencast' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
-EXPOSE 22
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY kickstart.sh /usr/local/bin/
-RUN chmod +rx /usr/local/bin/kickstart.sh
-CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
-ADD VERSION .
-CMD ["/usr/bin/supervisord"]
